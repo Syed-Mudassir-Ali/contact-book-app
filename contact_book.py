@@ -1,3 +1,4 @@
+import streamlit as st
 import json
 import os
 
@@ -16,63 +17,64 @@ def save_contacts(contacts):
         json.dump(contacts, file, indent=4)
 
 # Add a new contact
-def add_contact():
-    name = input("Enter name: ")
-    phone = input("Enter phone number: ")
-    email = input("Enter email: ")
+def add_contact(name, phone, email):
     contacts = load_contacts()
     contacts.append({"name": name, "phone": phone, "email": email})
     save_contacts(contacts)
-    print("Contact added successfully!\n")
+    st.success("Contact added successfully!")
 
 # View all contacts
 def view_contacts():
     contacts = load_contacts()
     if not contacts:
-        print("No contacts found.\n")
+        st.warning("No contacts found.")
     else:
         for c in contacts:
-            print(f"Name: {c['name']}, Phone: {c['phone']}, Email: {c['email']}")
-        print()
+            st.write(f"**Name:** {c['name']}, **Phone:** {c['phone']}, **Email:** {c['email']}")
 
 # Delete a contact by name
-def delete_contact():
-    name_to_delete = input("Enter the name of the contact to delete: ")
+def delete_contact(name_to_delete):
     contacts = load_contacts()
-    
-    # Check if the contact exists
     contact_found = False
     for contact in contacts:
         if contact["name"].lower() == name_to_delete.lower():
             contacts.remove(contact)
             contact_found = True
             break
-    
+
     if contact_found:
         save_contacts(contacts)
-        print(f"Contact '{name_to_delete}' deleted successfully!\n")
+        st.success(f"Contact '{name_to_delete}' deleted successfully!")
     else:
-        print(f"Contact '{name_to_delete}' not found.\n")
+        st.warning(f"Contact '{name_to_delete}' not found.")
 
-# Main menu
-def menu():
-    while True:
-        print("1. Add Contact")
-        print("2. View Contacts")
-        print("3. Delete Contact")
-        print("4. Exit")
-        choice = input("Enter choice: ")
+# Streamlit UI
+st.title("Contact Book")
 
-        if choice == "1":
-            add_contact()
-        elif choice == "2":
-            view_contacts()
-        elif choice == "3":
-            delete_contact()
-        elif choice == "4":
-            print("Goodbye!")
-            break
+menu = st.sidebar.selectbox("Select Option", ["Add Contact", "View Contacts", "Delete Contact"])
+
+if menu == "Add Contact":
+    st.subheader("Add a New Contact")
+    name = st.text_input("Enter Name")
+    phone = st.text_input("Enter Phone Number")
+    email = st.text_input("Enter Email")
+
+    if st.button("Add Contact"):
+        if name and phone and email:
+            add_contact(name, phone, email)
         else:
-            print("Invalid choice!\n")
+            st.warning("Please fill in all the fields.")
 
-menu()
+elif menu == "View Contacts":
+    st.subheader("View All Contacts")
+    view_contacts()
+
+elif menu == "Delete Contact":
+    st.subheader("Delete a Contact")
+    name_to_delete = st.text_input("Enter Name of Contact to Delete")
+
+    if st.button("Delete Contact"):
+        if name_to_delete:
+            delete_contact(name_to_delete)
+        else:
+            st.warning("Please enter a name to delete.")
